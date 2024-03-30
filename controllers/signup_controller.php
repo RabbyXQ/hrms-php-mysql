@@ -1,8 +1,8 @@
 <?php
 require_once "../config/dbconfig.php";
-require_once "../models/SignupModel.php";
+require_once "../models/user_model.php";
 
-$signupModel = new SignupModel($conn);
+$userModel = new UserModel($conn);
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = $_POST['email'];
@@ -12,17 +12,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if($password != $retypePassword){
         $error = "Password Mismatched";
-    } elseif ($signupModel->checkExistingUser($email)) {
+    } elseif ($userModel->checkExistingUser($email)) {
         $error = "User already exists with this email";
     } else {
-        $result = $signupModel->createUser($email, $password, $roleId);
+        $result = $userModel->createUser($email, $password, $roleId);
         if ($result) {
-            echo "User inserted successfully.";
+            header("Location: login.php");
+            exit();
         } else {
             echo "Error: " . $conn->error;
         }
     }
 }
 
-$roles = $signupModel->getRoles();
+$roles = $userModel->getRoles();
 ?>
