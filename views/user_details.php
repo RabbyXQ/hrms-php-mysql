@@ -2,9 +2,9 @@
 require_once "../config/dbconfig.php";
 require_once "../others/auth_session.php";
 
-$email = $conn->real_escape_string($_SESSION['email']);
+$userID = $conn->real_escape_string($_POST['userId']);
 
-$query = "SELECT * FROM user WHERE email='$email'";
+$query = "SELECT * FROM user join role on user.role = role_id WHERE user_id='$userID'";
 $result = $conn->query($query);
 
 if ($result && $result->num_rows > 0) {
@@ -84,7 +84,7 @@ if ($result && $result->num_rows > 0) {
         <p><strong>Region:</strong> <?php echo $row['region']; ?></p>
         <p><strong>Location Coordinate:</strong> <?php echo $row['location_co_ordinate']; ?></p>
         <p><strong>Occupation:</strong> <?php echo $row['occupation']; ?></p>
-        <p><strong>Role:</strong> <?php echo $row['role']; ?></p>
+        <p><strong>Role:</strong> <?php echo $row['role_name']; ?></p>
     <?php else: ?>
         <p class="no-user">No user found.</p>
     <?php endif; ?>

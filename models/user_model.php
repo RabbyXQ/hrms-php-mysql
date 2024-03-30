@@ -19,6 +19,7 @@ class UserModel {
     public $occupation;
     public $role;
 
+    
     public function __construct($conn) {
         $this->conn = $conn;
     }
@@ -60,6 +61,18 @@ class UserModel {
         $result = $this->conn->query($query);
         $row = $result->fetch_assoc();
         return $row['first_name'] . " ". $row['last_name'];
+    }
+    
+    public function getUserDetails($userEmail){
+        $query = "SELECT * FROM user WHERE email='$userEmail'";
+        $result = $this->conn->query($query);
+
+        if ($result && $result->num_rows > 0) {
+            $row = $result->fetch_assoc();
+        } else {
+            $row = array(); 
+        }
+        return $row;
     }
     
 

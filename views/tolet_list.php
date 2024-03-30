@@ -1,5 +1,5 @@
 <?php
-require_once("../config/dbconfig.php");
+require_once "../config/dbconfig.php";
 
 // Default sorting column and order
 $sortColumn = isset($_GET['sort']) ? $_GET['sort'] : 'tolet_id';
@@ -9,9 +9,34 @@ $sortOrder = isset($_GET['order']) ? $_GET['order'] : 'ASC';
 $validColumns = array('tolet_id', 'location', 'address', 'city', 'compartment', 'rent_per_month', 'status', 'date_of_registration');
 $sortColumn = in_array($sortColumn, $validColumns) ? $sortColumn : 'tolet_id';
 
-// SQL query to select data from the table with sorting
-$sql = "SELECT tolet_id, location, address, city, compartment, rent_per_month, status, date_of_registration FROM tolet ORDER BY $sortColumn $sortOrder";
-$result = $conn->query($sql);
+// Initialize search variables
+$searchQuery = "";
+$searchParams = array();
+
+// Check if search query is provided
+if(isset($_GET['search'])) {
+    // Sanitize the search query to prevent SQL injection
+    $searchQuery = $conn->real_escape_string($_GET['search']);
+    // Prepare the search parameters for the SQL query
+    $searchParams = array("%$searchQuery%", "%$searchQuery%", "%$searchQuery%");
+    // SQL query to select data from the table with sorting and searching
+    $sql = "SELECT tolet_id, location, address, city, compartment, rent_per_month, status, date_of_registration 
+            FROM tolet 
+            WHERE location LIKE ? OR address LIKE ? OR city LIKE ?
+            ORDER BY $sortColumn $sortOrder";
+    $stmt = $conn->prepare($sql);
+    // Bind parameters for search query
+    $stmt->bind_param("sss", ...$searchParams);
+} else {
+    // SQL query to select data from the table with sorting only
+    $sql = "SELECT tolet_id, location, address, city, compartment, rent_per_month, status, date_of_registration 
+            FROM tolet 
+            ORDER BY $sortColumn $sortOrder";
+    $stmt = $conn->prepare($sql);
+}
+
+$stmt->execute();
+$result = $stmt->get_result();
 ?>
 
 <!DOCTYPE html>
@@ -21,16 +46,59 @@ $result = $conn->query($sql);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tolet Data</title>
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f2f2f2;
+        }
+
+        h2 {
+            text-align: center;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
+            margin: 20px auto;
+            background-color: #fff;
+            border: 1px solid #ddd;
         }
-        table, th, td {
-            border: 1px solid black;
-            padding: 8px;
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
         }
+
         th {
             background-color: #f2f2f2;
+            cursor: pointer;
+        }
+
+        th a {
+            text-decoration: none;
+            color: #333;
+        }
+
+        th a:hover {
+            color: #000;
+        }
+
+        input[type="text"] {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        button[type="submit"] {
+            padding: 8px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
             cursor: pointer;
         }
         tr.clickable {
@@ -39,11 +107,20 @@ $result = $conn->query($sql);
         tr.clickable:hover {
             background-color: #f5f5f5;
         }
+        button[type="submit"]:hover {
+            background-color: #0056b3;
+        }
     </style>
 </head>
 <body>
 
 <h2>Tolet Data</h2>
+
+<!-- Search form -->
+<form method="GET" style="text-align: center;">
+    <input type="text" name="search" placeholder="Search..." value="<?php echo htmlspecialchars($searchQuery); ?>">
+    <button type="submit">Search</button>
+</form>
 
 <table>
     <tr>
@@ -83,6 +160,5 @@ $result = $conn->query($sql);
         document.getElementById("detailsForm").submit();
     }
 </script>
-
 </body>
 </html>
