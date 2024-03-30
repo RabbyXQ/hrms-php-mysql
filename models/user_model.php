@@ -54,6 +54,13 @@ class UserModel {
         return $row['role_name'];
     }
     
+    public function getName($email) {
+        $email = $this->conn->real_escape_string($email);
+        $query = "SELECT first_name, last_name FROM user WHERE email = '$email' LIMIT 1; ";
+        $result = $this->conn->query($query);
+        $row = $result->fetch_assoc();
+        return $row['first_name'] . " ". $row['last_name'];
+    }
     
 
 }

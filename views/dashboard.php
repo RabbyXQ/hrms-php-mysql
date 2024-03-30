@@ -27,6 +27,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["logout"])) {
 <body>
     <h1>Welcome to the Dashboard!</h1>
     <p>Welcome, <?php echo $userModel->getRole($userEmail); ?>!</p>
+    <ol><h3>Report Links</h3>
+        <li>
+        <a href="tolet_list.php">Tolet List</a>
+        </li>
+    </ol>
     <form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
         <input type="submit" name="logout" value="Logout">
     </form>
